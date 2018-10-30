@@ -1,0 +1,39 @@
+.App {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.AppHeader {
+  background-color: #282c34;
+  height: 4em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.AppBody {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: row;
+}
+
+.AppPlayfieldContainer {
+  background-color: #eeeeff;
+  flex: 0 0 250px;
+  padding: 8px;
+}
+
+.AppDrawer {
+  flex: 1 1 100%;
+}
+
+.AppFooter {
+  background-color: #282c34;
+  height: 4em;
+  display: flex;
+}
