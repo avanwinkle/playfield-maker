@@ -6,6 +6,7 @@
     "react": "^16.6.0",
     "react-cursor-position": "^3.0.3",
     "react-dom": "^16.6.0",
+    "react-inlinesvg": "^0.8.2",
     "react-scripts": "2.1.0"
   },
   "scripts": {

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import ReactCursorPosition from 'react-cursor-position';
 import PlayfieldComponent from './components/PlayfieldComponent';
+import CutoutComponent from './components/CutoutComponent';
 import PlayfieldModel from './models/PlayfieldModel';
 import './App.css';
 
@@ -26,7 +27,7 @@ class App extends Component {
             </ReactCursorPosition>
           </div>
           <div className="AppDrawer">
-            Right section is here
+            <CutoutComponent cutout="slingshot" />
           </div>
         </div>
         <div className="AppFooter">

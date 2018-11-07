@@ -1,0 +1,25 @@
+.CutoutComponentContainer {
+  
+}
+
+.CutoutVector {
+  fill: none;
+}
+
+g[inkscape\:label="Z0_CUT500"] > path {
+  stroke: #ff00ff;
+}
+
+g[inkscape\:label="Z0_TOPCOMP"] > path {
+  stroke: #00FF00;
+}
+
+g[inkscape\:label="Z0_BOTCOMP"] > path {
+  stroke: #0000ff;
+  opacity: 0.2;
+}
+
+.CutoutVector:hover g[inkscape\:label="Z0_BOTCOMP"] > path {
+  opacity: 1;
+}
+
