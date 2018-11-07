@@ -1,9 +1,18 @@
 import React, { Component } from 'react';
 import ReactCursorPosition from 'react-cursor-position';
-import Playfield from './components/Playfield';
+import PlayfieldComponent from './components/PlayfieldComponent';
+import PlayfieldModel from './models/PlayfieldModel';
 import './App.css';
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+    this._playfield = new PlayfieldModel();
+    this.state = {
+      width: this._playfield.width * 10,
+      height: this._playfield.height * 10,
+    };
+  }
   render() {
     return (
       <div className="App">
@@ -11,10 +20,9 @@ class App extends Component {
           header is here
         </header>
         <div className="AppBody">
-          <div className="AppPlayfieldContainer">
-            Left section is here
+          <div className="AppPlayfieldContainer" >
             <ReactCursorPosition>
-              <Playfield />
+              <PlayfieldComponent playfield={this._playfield}/>
             </ReactCursorPosition>
           </div>
           <div className="AppDrawer">

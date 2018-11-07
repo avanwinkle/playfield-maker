@@ -1,0 +1,6 @@
+.Playfield {
+  border: solid 1px black;
+  box-sizing: content-box;
+  height: 100%;
+  flex: 1 0 100%;
+}
