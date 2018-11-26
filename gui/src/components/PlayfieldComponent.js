@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import PlayfieldModel from '../models/PlayfieldModel';
+import CutoutComponent from './CutoutComponent';
 import './PlayfieldComponent.css';
 
 const fractions = {
@@ -29,7 +31,8 @@ class PlayfieldComponent extends Component {
   updateWidth() {
     const height = this.el.clientHeight;
     const width = height * (this.props.playfield.width / this.props.playfield.height);
-    this.setState({ height, width });
+    const cutouts = this.props.playfield.renderCutouts();
+    this.setState({ height, width, cutouts });
   }
   componentDidMount() {
     this.updateWidth();

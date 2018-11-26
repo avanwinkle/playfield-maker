@@ -1,14 +1,11 @@
 import React, { Component } from 'react';
 import SVG from 'react-inlinesvg';
-import Cutouts from '../models/Cutouts';
 import './CutoutComponent.css';
 
 class CutoutComponent extends Component {
   constructor(props) {
     super(props);
-    console.log(Cutouts);
-    this._cutout = Cutouts[props.cutout];
-    this._vectorUri = "cutouts/" + this._cutout.vector;
+    this._vectorUri = "cutouts/" + props.cutout.vector;
   }
   render() {
     return (
