@@ -1,0 +1,16 @@
+{
+  "name": "playfield-maker",
+  "productName": "Playfield Maker",
+  "description": "A handy tool for designing playfields",
+  "author": {
+    "name": "Anthony van Winkle",
+    "email": "avanwinkle@users.noreply.github.com"
+  },
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=6.14.1"
+  },
+  "devDependencies": {
+    "xmldom": "^0.1.27"
+  }
+}
