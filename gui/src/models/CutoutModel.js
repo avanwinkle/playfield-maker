@@ -68,7 +68,7 @@ class CutoutModel {
     }
     if ([3, 4, 5].indexOf(this.anchor) !== -1) {
       offsetHeight = this._vectorHeight / -2;
-    } else if ([6, 7, 8].indexOf(this.anchor) !== -1) {
+    } else if ([0, 1, 2].indexOf(this.anchor) !== -1) {
       offsetHeight = this._vectorHeight * -1;
     }
 
@@ -81,7 +81,7 @@ class CutoutModel {
     }
     if ([3, 4, 5].indexOf(this.referencePoint) !== -1) {
       this.absoluteY = (this._playfield.height / 2) + this.absoluteY;
-    } else if ([6, 7, 8].indexOf(this.referencePoint) !== -1) {
+    } else if ([0, 1, 2].indexOf(this.referencePoint) !== -1) {
       this.absoluteY = this._playfield.height + this.absoluteY
     }
     this.renderX = this.absoluteX * this._playfield.dpi;

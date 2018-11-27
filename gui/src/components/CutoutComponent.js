@@ -26,9 +26,9 @@ class CutoutComponent extends Component {
         style={{
           position: "absolute",
           left: this.state.renderX,
-          bottom: this.state.renderY,
+          top: this.state.renderY,
           transform: "scale(" + this.state.scale + ")",
-          transformOrigin: "left bottom",
+          transformOrigin: "left top",
         }}>
         <div className="CutoutVector"
           dangerouslySetInnerHTML={{ __html: this.props.cutout._rawVector.outerHTML }}
