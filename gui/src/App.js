@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import ReactCursorPosition from 'react-cursor-position';
 import PlayfieldComponent from './components/PlayfieldComponent';
-import CutoutComponent from './components/CutoutComponent';
 import CutoutEditorComponent from './components/CutoutEditorComponent';
 import CutoutTypes from './models/CutoutTypes';
 import CutoutModel from './models/CutoutModel';
@@ -23,13 +22,13 @@ class PlayfieldMakerApp extends Component {
   onCutoutAdd(e) {
     const cutoutType = this.refs.newCutoutType.value;
     const cutout = new CutoutModel(cutoutType, cutoutType, this._playfield);
-    this.setState({ 
+    this.setState({
       activeCutout: cutout,
       isSavedCutout: false,
     })
   }
   onCutoutEdit(cutout) {
-    this.setState({ 
+    this.setState({
       activeCutout: cutout,
       isSavedCutout: true,
     });
@@ -48,22 +47,22 @@ class PlayfieldMakerApp extends Component {
     const { activeCutout } = this.state;
     return (
       <div className="App">
-        <header className="AppHeader">
-          header is here
-        </header>
+        <div className="AppPlayfieldContainer" >
+          <ReactCursorPosition>
+            <PlayfieldComponent
+              playfield={this._playfield}
+              cutouts={this._playfield.cutouts}
+              onCutoutSelect={this.onCutoutEdit.bind(this)}
+            />
+          </ReactCursorPosition>
+        </div>
         <div className="AppBody">
-          <div className="AppPlayfieldContainer" >
-            <ReactCursorPosition>
-              <PlayfieldComponent 
-                playfield={this._playfield}
-                cutouts={this._playfield.cutouts}
-                onCutoutSelect={this.onCutoutEdit.bind(this)}
-              />
-            </ReactCursorPosition>
-          </div>
+          <header className="AppHeader">
+
+          </header>
           <div className="AppDrawer">
             {activeCutout && (
-              <CutoutEditorComponent cutout={activeCutout} 
+              <CutoutEditorComponent cutout={activeCutout}
                 isSaved={this.state.isSavedCutout}
                 onComplete={this.onCutoutSave.bind(this)}
                 onCancel={this.onCutoutCancel.bind(this)}
@@ -73,16 +72,16 @@ class PlayfieldMakerApp extends Component {
               <form className="NewCutoutContainer">
                 <select ref="newCutoutType">
                   {Object.keys(CutoutTypes).map((cutoutType) => (
-                    <option name="cutoutType" value={cutoutType} key={cutoutType}>{cutoutType}</option>
+                    <option name="cutoutType" value={cutoutType} key={cutoutType}>{CutoutTypes[cutoutType].name}</option>
                   ))}
                 </select>
                 <input type="button" value="Add Cutout" onClick={this.onCutoutAdd.bind(this)}/>
               </form>
             )}
           </div>
-        </div>
-        <div className="AppFooter">
-          Footer hurray
+          <div className="AppFooter">
+
+          </div>
         </div>
       </div>
     );

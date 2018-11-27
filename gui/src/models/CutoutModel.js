@@ -12,11 +12,12 @@ class CutoutModel {
     if (!playfield) {
       throw Error("Cutout instances require a playfield");
     }
-    
+
     this.type = CutoutTypes[cutoutType];
     this._playfield = playfield;
     this._vectorUri = "cutouts/" + this.type.vector;
     this._dpi = this.type.dpi;
+    this.scale = this._playfield.dpi / this._dpi;
     this.referencePoint = 0;
     this.anchor = 0;
     this.posX = 0.0;
@@ -40,9 +41,16 @@ class CutoutModel {
 
     window.fetch(this._vectorUri).then((svg) => {
       svg.text().then((text) => {
-        this._rawVector = text;
         var parser = new DOMParser();
         var vectorParent = parser.parseFromString(text, "text/xml").getElementsByTagName("svg")[0];
+        window.v = vectorParent;
+        var paths = vectorParent.getElementsByTagName("path")
+        for (var i=0; i<paths.length; i++) {
+          paths[i].style = "";
+          paths[i].style.fill = undefined;
+          paths[i].style.stroke = undefined;
+        }
+        this._rawVector = vectorParent;
         this._vectorWidth = parseFloat(vectorParent.getAttribute("width"));
         this._vectorHeight = parseFloat(vectorParent.getAttribute("height"));
         this.calculateAbsolutePosition();
@@ -51,18 +59,17 @@ class CutoutModel {
   }
   calculateAbsolutePosition() {
     if (!this._playfield) { return; }
-
     var offsetWidth = 0;
     var offsetHeight = 0;
     if ([1, 4, 7].indexOf(this.anchor) !== -1) {
-      offsetWidth = this._vectorWidth / 2;
+      offsetWidth = this._vectorWidth / -2;
     } else if ([2, 5, 8].indexOf(this.anchor) !== -1) {
-      offsetWidth = this._vectorWidth;
+      offsetWidth = this._vectorWidth * -1;
     }
     if ([3, 4, 5].indexOf(this.anchor) !== -1) {
-      offsetHeight = this._vectorHeight / 2;
+      offsetHeight = this._vectorHeight / -2;
     } else if ([6, 7, 8].indexOf(this.anchor) !== -1) {
-      offsetHeight = this._vectorHeight;
+      offsetHeight = this._vectorHeight * -1;
     }
 
     this.absoluteX = (this.unitsX === "pct" ? this._playfield.width * this.pctX / 100 : this.posX) + offsetWidth;
@@ -80,6 +87,10 @@ class CutoutModel {
     this.renderX = this.absoluteX * this._playfield.dpi;
     this.renderY = this.absoluteY * this._playfield.dpi;
     this.scale = this._playfield.dpi / this._dpi;
+
+    if (this.onPositionChanged) {
+      this.onPositionChanged(this.renderX, this.renderY, this.scale);
+    }
   }
   setAnchor(anchor) {
     if (this._validateAnchorPoint(anchor)) {
@@ -151,7 +162,7 @@ class CutoutModel {
     var errs = {};
     var foundErrs = false;
     [opts.anchor, opts.referencePoint].forEach((anchor) => {
-      if (anchor !== undefined && !this._validateAnchorPoint(opts.anchor)) {
+      if (anchor !== undefined && !this._validateAnchorPoint(anchor)) {
         errs[anchor] = true;
         foundErrs = true;
       }
@@ -173,11 +184,14 @@ class CutoutModel {
     if (foundErrs) {
       return errs;
     }
+    // Set the units first, to avoid miscalculations
+    if (opts.unitsX) { this.unitsX = opts.unitsX; }
+    if (opts.unitsY) { this.unitsY = opts.unitsY; }
     Object.keys(opts).forEach((key) => {
       if (opts[key] !== undefined) {
-        if (key === "pctX" || key === "posX") {
+        if ((this.unitsX === "pct" && key === "pctX") || (this.unitsX === "in" && key === "posX")) {
           this.setPosition(opts[key], undefined);
-        } else if ( key === "pctY" || key === "posY") {
+        } else if ((this.unitsY === "pct" && key === "pctY") || (this.unitsY === "in" && key === "posY")) {
           this.setPosition(undefined, opts[key]);
         } else {
           this[key] = opts[key];
@@ -207,7 +221,7 @@ class CutoutModel {
     if (typeof name !== "string") {
       console.error("Cutout name must be a string, received '" + name + "'");
       return false;
-    } 
+    }
     if (name.match("[^A-Za-z0-9-_]")) {
       console.error("Cutout name must contain only letters, numbers, dash, or underscore: '" + name + "'");
       return false;

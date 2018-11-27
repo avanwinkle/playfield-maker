@@ -4,4 +4,17 @@
   height: 100%;
   flex: 1 0 100%;
   position: relative;
+  background-color: #fff;
+  cursor: crosshair;
+}
+
+.PlayfieldCursorPosition {
+  position: absolute;
+  bottom: 0;
+  left: 100%;
+  width: 10em;
+  font-size: 8pt;
+  color: #fff;
+  text-align: left;
+  margin-left: 12px;
 }

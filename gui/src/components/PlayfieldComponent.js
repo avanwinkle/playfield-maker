@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import PlayfieldModel from '../models/PlayfieldModel';
 import CutoutComponent from './CutoutComponent';
 import './PlayfieldComponent.css';
 
@@ -57,8 +56,12 @@ class PlayfieldComponent extends Component {
 
     return (
       <div className="Playfield" ref={ (el) => this.el = el } style={{ width: this.state.width }}>
-        <div>x: {generateString(xIn, xDecRounded)}</div>
-        <div>y: {generateString(yIn, yDecRounded)}</div>
+        {this.props.isActive && (
+          <div className="PlayfieldCursorPosition">
+            <div>x: {generateString(xIn, xDecRounded)}</div>
+            <div>y: {generateString(yIn, yDecRounded)}</div>
+          </div>
+        )}
         {this.props.cutouts.map((cutout) => (
           <div key={cutout.name} onClick={(e) => this.props.onCutoutSelect(cutout)}>
             <CutoutComponent cutout={cutout} />

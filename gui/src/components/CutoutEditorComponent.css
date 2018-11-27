@@ -1,0 +1,16 @@
+.CutoutEditorContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 12px;
+}
+
+.CutoutEditorRow {
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 16px;
+}
+
+.TextFieldPos {
+  margin-right: 16px;
+  max-width: 100px;
+}
