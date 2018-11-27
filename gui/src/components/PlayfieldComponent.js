@@ -31,8 +31,8 @@ class PlayfieldComponent extends Component {
   updateWidth() {
     const height = this.el.clientHeight;
     const width = height * (this.props.playfield.width / this.props.playfield.height);
-    const cutouts = this.props.playfield.renderCutouts();
-    this.setState({ height, width, cutouts });
+    this.props.playfield.setDPI(width);
+    this.setState({ height, width });
   }
   componentDidMount() {
     this.updateWidth();
@@ -59,6 +59,11 @@ class PlayfieldComponent extends Component {
       <div className="Playfield" ref={ (el) => this.el = el } style={{ width: this.state.width }}>
         <div>x: {generateString(xIn, xDecRounded)}</div>
         <div>y: {generateString(yIn, yDecRounded)}</div>
+        {this.props.cutouts.map((cutout) => (
+          <div key={cutout.name} onClick={(e) => this.props.onCutoutSelect(cutout)}>
+            <CutoutComponent cutout={cutout} />
+          </div>
+        ))}
       </div>
     )
   }

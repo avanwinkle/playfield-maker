@@ -2,12 +2,11 @@ import React, { Component } from 'react';
 import ReactCursorPosition from 'react-cursor-position';
 import PlayfieldComponent from './components/PlayfieldComponent';
 import CutoutComponent from './components/CutoutComponent';
+import CutoutEditorComponent from './components/CutoutEditorComponent';
 import CutoutTypes from './models/CutoutTypes';
 import CutoutModel from './models/CutoutModel';
 import PlayfieldModel from './models/PlayfieldModel';
 
-import TextField from "material-ui/TextField";
-import RaisedButton from "material-ui/RaisedButton";
 import './App.css';
 
 class PlayfieldMakerApp extends Component {
@@ -18,18 +17,32 @@ class PlayfieldMakerApp extends Component {
       width: this._playfield.width * 10,
       height: this._playfield.height * 10,
       activeCutout: undefined,
+      isSavedCutout: undefined,
     };
   }
   onCutoutAdd(e) {
     const cutoutType = this.refs.newCutoutType.value;
-    this.setState({ activeCutout: new CutoutModel(cutoutType, cutoutType) })
+    const cutout = new CutoutModel(cutoutType, cutoutType, this._playfield);
+    this.setState({ 
+      activeCutout: cutout,
+      isSavedCutout: false,
+    })
   }
   onCutoutEdit(cutout) {
-    this.setState({ activeCutout: cutout });
+    this.setState({ 
+      activeCutout: cutout,
+      isSavedCutout: true,
+    });
   }
   onCutoutSave() {
     this._playfield.addCutout(this.state.activeCutout);
-    this.setState({ activeCutout: undefined });
+    this.setState({ activeCutout: undefined, isSavedCutout: undefined });
+  }
+  onCutoutCancel(cutout) {
+    if (this._isSavedCutout === false) {
+      this._playfield.removeCutout(cutout);
+    }
+    this.setState({ activeCutout: undefined, isSavedCutout: undefined });
   }
   render() {
     const { activeCutout } = this.state;
@@ -41,30 +54,20 @@ class PlayfieldMakerApp extends Component {
         <div className="AppBody">
           <div className="AppPlayfieldContainer" >
             <ReactCursorPosition>
-              <PlayfieldComponent playfield={this._playfield} onCutoutSelect={this.onCutoutEdit.bind(this)}/>
+              <PlayfieldComponent 
+                playfield={this._playfield}
+                cutouts={this._playfield.cutouts}
+                onCutoutSelect={this.onCutoutEdit.bind(this)}
+              />
             </ReactCursorPosition>
           </div>
           <div className="AppDrawer">
             {activeCutout && (
-              <div className="ActiveCutoutContainer">
-                Active Cutout: {activeCutout.name} ({activeCutout.posX}, {activeCutout.posY})
-                <TextField name="activeCutoutName" floatingLabelText="Name"
-                  value={activeCutout.name}
-                  onChange={(e, n) => { activeCutout.setName(n); this.setState({ activeCutout }) }} />
-                <TextField name="activeCutoutX" floatingLabelText="X Position"
-                  value={activeCutout.posX}
-                  type="number"
-                  onChange={(e, x) => { activeCutout.setPosition(x, undefined); this.setState({ activeCutout }) }} />
-                <TextField name="activeCutoutY" floatingLabelText="Y Position"
-                  value={activeCutout.posY}
-                  type="number"
-                  onChange={(e, y) => { activeCutout.setPosition(undefined, y); this.setState({ activeCutout }) }} />
-                <RaisedButton
-                  onClick={this.onCutoutSave.bind(this)}
-                  label="Save Cutout"
-                />
-              </div>
-
+              <CutoutEditorComponent cutout={activeCutout} 
+                isSaved={this.state.isSavedCutout}
+                onComplete={this.onCutoutSave.bind(this)}
+                onCancel={this.onCutoutCancel.bind(this)}
+              />
             )}
             {!activeCutout && (
               <form className="NewCutoutContainer">

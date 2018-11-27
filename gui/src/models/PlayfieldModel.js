@@ -3,18 +3,24 @@ class PlayfieldModel {
     opts = opts || {};
     this.width = opts.width || 20.5;
     this.height = opts.height || 45.0;
-    this._cutouts = [];
+    this.dpi = -1;
+    this.cutouts = [];
   }
 
   addCutout(cutoutInstance) {
-    if (this._cutouts.indexOf(cutoutInstance) === -1) {
-      this._cutouts.push(cutoutInstance);
+    if (this.cutouts.indexOf(cutoutInstance) === -1) {
+      this.cutouts.push(cutoutInstance);
     }
   }
-
-  renderCutouts() {
-    return this._cutouts.map((cutout) => {
-      return cutout.generateRenderObject(this.width, this.height);
+  removeCutout(cutoutInstance) {
+    if (this.cutouts.indexOf(cutoutInstance) !== -1) {
+      this.cutouts.splice(this.cutouts.indexOf(cutoutInstance), 1);
+    }
+  }
+  setDPI(pixelWidth) {
+    this.dpi = pixelWidth / this.width;
+    this.cutouts.forEach((cutout) => {
+      cutout.calculateAbsolutePosition();
     });
   }
 }
