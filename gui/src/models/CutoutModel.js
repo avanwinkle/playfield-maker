@@ -1,11 +1,7 @@
 import CutoutTypes from './CutoutTypes';
 
 class CutoutModel {
-  constructor(name, cutoutType, playfield, opts) {
-    this.setName(name);
-    if (!this.name) {
-      throw Error("Invalid cutout name '" + name + "'");
-    }
+  constructor(cutoutType, playfield, opts) {
     if (!CutoutTypes[cutoutType]) {
       throw Error("Unknown cutout type '" + cutoutType + "'");
     }
@@ -13,10 +9,13 @@ class CutoutModel {
       throw Error("Cutout instances require a playfield");
     }
 
-    this.type = CutoutTypes[cutoutType];
+    var cutoutSource = CutoutTypes[cutoutType];
+    this._vectorUri = "cutouts/" + cutoutSource.vector;
+    this._dpi = cutoutSource.dpi;
+
     this._playfield = playfield;
-    this._vectorUri = "cutouts/" + this.type.vector;
-    this._dpi = this.type.dpi;
+    this.cutoutType = cutoutType;
+
     this.scale = this._playfield.dpi / this._dpi;
     this.referencePoint = 0;
     this.anchor = 0;
@@ -27,6 +26,7 @@ class CutoutModel {
     this.pctY = 0.0;
     this.unitsY = "in";
     this.rotation = 0.0;
+    this.name = this._playfield.generateCutoutName(cutoutType);
 
     opts = opts || {};
     if (opts.anchor) {
@@ -160,28 +160,23 @@ class CutoutModel {
   }
   validateAndSave(opts) {
     var errs = {};
-    var foundErrs = false;
     [opts.anchor, opts.referencePoint].forEach((anchor) => {
-      if (anchor !== undefined && !this._validateAnchorPoint(anchor)) {
-        errs[anchor] = true;
-        foundErrs = true;
+      if (anchor !== undefined) {
+        errs[anchor] = this._validateAnchorPoint(anchor);
       }
     });
     [opts.posX, opts.posY, opts.pctX, opts.pctY].forEach((pos) => {
-      if (pos !== undefined && !this._validateCoordinate(pos)) {
-        errs[pos] = true;
-        foundErrs = true;
+      if (pos !== undefined) {
+        errs[pos] = this._validateCoordinate(pos);
       }
     });
-    if (opts.name !== undefined && !this._validateName(opts.name)) {
-      errs.name = true
-      foundErrs = true;
+    if (opts.name !== undefined) {
+      errs.name = this._validateName(opts.name);
     }
-    if (opts.rotation !== undefined && !this._validateRotation(opts.rotation)) {
-      errs.rotation = true;
-      foundErrs = true;
+    if (opts.rotation !== undefined) {
+      errs.rotation = this._validateRotation(opts.rotation);
     }
-    if (foundErrs) {
+    if (Object.keys(errs).filter((key) => errs[key]).length) {
       return errs;
     }
     // Set the units first, to avoid miscalculations
@@ -202,38 +197,33 @@ class CutoutModel {
   }
   _validateAnchorPoint(anchor) {
     if (typeof anchor !== "number" || anchor < 0 || anchor > 8) {
-      console.error("Invalid anchor '" + anchor + "'");
-      return false;
+      return "Invalid anchor point";
     }
-    return true;
   }
   _validateCoordinate(pos) {
     if (pos === undefined || isNaN(pos)) {
-      return false;
+      return "Coordinate is not a number";
     }
     if (typeof pos !== "number") {
-      console.error("Invalid coordinate position '" + pos +"'");
-      return false;
+      return "Invalid position";
     }
-    return true;
   }
   _validateName(name) {
     if (typeof name !== "string") {
-      console.error("Cutout name must be a string, received '" + name + "'");
-      return false;
+      return "Cutout name must be a string";
     }
     if (name.match("[^A-Za-z0-9-_]")) {
-      console.error("Cutout name must contain only letters, numbers, dash, or underscore: '" + name + "'");
-      return false;
+      return "Cutout name must be alphanumeric, dash, or underscore.";
     }
-    return true;
+    if (name === "") {
+      return "Required";
+    }
+    return this._playfield.validateCutoutName(name);
   }
   _validateRotation(angle) {
     if (typeof angle !== "number" || angle > 360 || angle < -360) {
-      console.error("Invalid rotation angle '" + angle + "'");
-      return false;
+      return "Invalid angle";
     }
-    return true;
   }
 }
 

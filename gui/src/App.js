@@ -21,7 +21,7 @@ class PlayfieldMakerApp extends Component {
   }
   onCutoutAdd(e) {
     const cutoutType = this.refs.newCutoutType.value;
-    const cutout = new CutoutModel(cutoutType, cutoutType, this._playfield);
+    const cutout = new CutoutModel(cutoutType, this._playfield);
     this.setState({
       activeCutout: cutout,
       isSavedCutout: false,

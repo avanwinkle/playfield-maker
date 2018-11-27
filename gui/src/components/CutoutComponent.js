@@ -4,10 +4,14 @@ import './CutoutComponent.css';
 class CutoutComponent extends Component {
   constructor(props) {
     super(props);
-    this._vectorUri = "cutouts/" + props.cutout.type.vector;
+    this._vectorUri = "cutouts/" + props.cutout.cutoutType.vector;
     this._dataUri = ""
     props.cutout.onPositionChanged = this.onRenderPositionChanged.bind(this);
-    this.state = { renderX: 0, renderY: 0, scale: props.cutout.scale }
+    this.state = {
+      renderX: props.cutout.renderX,
+      renderY: props.cutout.renderY,
+      scale: props.cutout.scale,
+    }
   }
   onRenderPositionChanged(x, y, scale) {
     this.setState({
