@@ -9,9 +9,11 @@
     "react-dom": "^16.6.0",
     "react-scripts": "2.1.0"
   },
+  "homepage": "./",
   "main": "app/electron-starter.js",
   "scripts": {
     "start": "nf start -p 13020",
+    "electron": "electron .",
     "electron-dev": "ELECTRON_DEV=true ELECTRON_START_URL=http://localhost:13020 electron .",
     "electron-wait": "node scripts/electron-wait-react",
     "react-start": "PORT=13020 react-scripts start",

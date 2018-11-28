@@ -5,16 +5,20 @@ const url      = require("url");
 const { app, BrowserWindow, ipcMain } = electron;
 const PMElectronMenu = require("./PMElectronMenu");
 
+const PlayfieldExporter = require("./PlayfieldExporter");
+
 class PlayfieldMakerElectron {
   constructor() {
     this.app = app;
     this.app.on("ready", this._createApplication.bind(this));
+    this.exporter = new PlayfieldExporter();
   }
 
   receiveExport(__evt, data) {
     process.stdout.write("Receiving export!");
     process.stdout.write(data.format.toString());
     process.stdout.write(data.data.toString());
+    this.exporter.exportPlayfieldJSONToFile(data.data);
   }
 
   sendToMainWindow(event, data) {

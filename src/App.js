@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import ReactCursorPosition from 'react-cursor-position';
 import PlayfieldComponent from './components/PlayfieldComponent';
 import CutoutEditorComponent from './components/CutoutEditorComponent';
-import CutoutTypes from './models/CutoutTypes';
 import CutoutModel from './models/CutoutModel';
 import PlayfieldModel from './models/PlayfieldModel';
 
@@ -23,10 +22,15 @@ class PlayfieldMakerApp extends Component {
       this._ipcRenderer = window.require("electron").ipcRenderer;
       this._ipcRenderer.on("export-request", this._handleExportRequest.bind(this));
     }
+
+    fetch("./data/cutoutTypes.json").then(response => response.json()).then((body) => {
+      console.log("Got cutout types!", body);
+      this.setState({ CutoutTypes: body });
+    });
   }
   onCutoutAdd(e) {
     const cutoutType = this.refs.newCutoutType.value;
-    const cutout = new CutoutModel(cutoutType, this._playfield);
+    const cutout = new CutoutModel(cutoutType, this.state.CutoutTypes[cutoutType], this._playfield);
     this.setState({
       activeCutout: cutout,
       isSavedCutout: false,
@@ -54,7 +58,7 @@ class PlayfieldMakerApp extends Component {
     this._ipcRenderer.send("export-ready", { format: "json", data: this._playfield.export() });
   }
   render() {
-    const { activeCutout } = this.state;
+    const { activeCutout, CutoutTypes } = this.state;
     return (
       <div className="App">
         <div className="AppPlayfieldContainer" >
@@ -78,7 +82,7 @@ class PlayfieldMakerApp extends Component {
                 onCancel={this.onCutoutCancel.bind(this)}
               />
             )}
-            {!activeCutout && (
+            {!activeCutout && CutoutTypes && (
               <form className="NewCutoutContainer">
                 <select ref="newCutoutType">
                   {Object.keys(CutoutTypes).map((cutoutType) => (

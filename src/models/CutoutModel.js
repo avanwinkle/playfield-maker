@@ -1,21 +1,19 @@
-import CutoutTypes from './CutoutTypes';
-
 class CutoutModel {
-  constructor(cutoutType, playfield, opts) {
-    if (!CutoutTypes[cutoutType]) {
+  constructor(cutoutType, cutoutSchema, playfield, opts) {
+    if (!cutoutType || !cutoutSchema) {
       throw Error("Unknown cutout type '" + cutoutType + "'");
     }
     if (!playfield) {
       throw Error("Cutout instances require a playfield");
     }
 
-    var cutoutSource = CutoutTypes[cutoutType];
-    this._vectorUri = "cutouts/" + cutoutSource.vector;
-    this._dpi = cutoutSource.dpi;
+    this._vectorUri = "cutouts/" + cutoutSchema.vector;
+    this._dpi = cutoutSchema.dpi;
 
     this._playfield = playfield;
     this.cutoutType = cutoutType;
 
+    this.id = null;
     this.scale = this._playfield.dpi / this._dpi;
     this.referencePoint = 0;
     this.anchor = 0;
@@ -95,6 +93,8 @@ class CutoutModel {
   }
   export() {
     return {
+      id: this.id,
+      name: this.name,
       cutoutType: this.cutoutType,
       offsetX: this.absoluteX,
       offsetY: this.absoluteY,
