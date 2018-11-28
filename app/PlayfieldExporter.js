@@ -2,6 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const xmldom = require("xmldom");
 
+const DPI = 96;
+
 const styleSheet =
 "    path { stroke: none; fill: none; } " +
 "    g.Z0_TOPCOMP   path { stroke: #FF00FF; } " +
@@ -17,6 +19,7 @@ class PlayfieldExporter {
     this._DOMImplementation = new xmldom.DOMImplementation();
     this._XMLSerializer = new xmldom.XMLSerializer();
     this._document = undefined;
+    this._inkscape = true;
 
     fs.readFile(__dirname + "/../public/data/CutoutTypes.json", "utf8", (_err, data) => {
       this._CutoutTypes = JSON.parse(data);
@@ -25,14 +28,18 @@ class PlayfieldExporter {
   createPlayfieldSVG(playfield) {
     this._document = this._DOMImplementation.createDocument(null, "xml");
     let playfieldSVG = this._document.createElement("svg");
-    playfieldSVG.setAttribute("height", "45in");
-    playfieldSVG.setAttribute("width", "20.5in");
+    playfieldSVG.setAttribute("height", playfield.height + "in");
+    playfieldSVG.setAttribute("width", playfield.width + "in");
+    playfieldSVG.setAttribute("viewBox", "0 0 " + (playfield.width * DPI) + " " + (playfield.height * DPI));
     playfieldSVG.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    
+    if (this._inkscape) {
+      playfieldSVG.setAttribute("xmlns:inkscape", "http://www.inkscape.org/namespaces/inkscape");
+    }
 
     let style = this._document.createElement("style");
     style.setAttribute("type", "text/css");
     style.appendChild(this._document.createCDATASection(styleSheet));
-    // style.innerHTML = styleSheet;
     playfieldSVG.appendChild(style);
 
     playfield.cutouts.forEach((cutout) => {
@@ -44,11 +51,11 @@ class PlayfieldExporter {
   exportPlayfieldJSONToFile(playfieldJSON) {
     const svg = this.createPlayfieldSVG(JSON.parse(playfieldJSON));
     const output = this._XMLSerializer.serializeToString(svg);
-    fs.writeFile(__dirname + "/../exports/playfield_export.svg", output, (result) => {
+    fs.writeFile(__dirname + "/../user_data/exports/playfield_export.svg", output, (result) => {
       if (result) {
         process.stderr.write("Error saving file: " + result);
       } else {
-        process.stdout.write("File export successful!");
+        process.stdout.write("File export successful!\n" + playfieldJSON + "\n");
       }
     });
   }
@@ -59,8 +66,13 @@ class PlayfieldExporter {
     const cutoutGroup = this._document.createElement("g");
     cutoutGroup.setAttribute("id", cutout.id || cutout.name);
     cutoutGroup.setAttribute("name", cutout.name);
+    if (this._inkscape) {
+      cutoutGroup.setAttribute("inkscape:groupmode", "layer");
+      cutoutGroup.setAttribute("inkscape:label", cutout.name)
+    }
     // Shift the entire cutout group to the offset coordinates, so each path inside can be relative
     cutoutGroup.setAttribute("transform", "translate(" + offsetX + "," + offsetY + ")");
+
     
     const result = fs.readFileSync(__dirname + "/../public/cutouts/" + cutoutSource.vector, "utf8");
     const rawDom = this._DOMParser.parseFromString(result, "text/xml");
@@ -78,8 +90,10 @@ class PlayfieldExporter {
       let g = groups[i];
       // Remove the inkscape-specific tags and add common ones
       let layer = g.getAttribute("inkscape:label")
-      g.removeAttribute("inkscape:groupmode");
-      g.removeAttribute("inkscape:label");
+      if (!this._inkscape) {
+        g.removeAttribute("inkscape:groupmode");
+        g.removeAttribute("inkscape:label");
+      }
       g.setAttribute("class", layer);
       g.setAttribute("layer", layer);
 

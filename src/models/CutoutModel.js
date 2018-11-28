@@ -1,5 +1,6 @@
 class CutoutModel {
   constructor(cutoutType, cutoutSchema, playfield, opts) {
+    opts = opts || {};
     if (!cutoutType || !cutoutSchema) {
       throw Error("Unknown cutout type '" + cutoutType + "'");
     }
@@ -13,29 +14,18 @@ class CutoutModel {
     this._playfield = playfield;
     this.cutoutType = cutoutType;
 
-    this.id = null;
+    this.id = opts.id || null;
     this.scale = this._playfield.dpi / this._dpi;
-    this.referencePoint = 0;
-    this.anchor = 0;
-    this.posX = 0.0;
-    this.pctX = 0.0;
-    this.unitsX = "in";
-    this.posY = 0.0;
-    this.pctY = 0.0;
-    this.unitsY = "in";
-    this.rotation = 0.0;
-    this.name = this._playfield.generateCutoutName(cutoutType);
-
-    opts = opts || {};
-    if (opts.anchor) {
-      this._setAnchor(opts.anchor)
-    }
-    if (opts.reference) {
-      this._setReference(opts.reference);
-    }
-    if (opts.x || opts.y) {
-      this.setPosition(opts.x, opts.y)
-    }
+    this.referencePoint = opts.referencePoint || 0;
+    this.anchor = opts.anchor || 0;
+    this.posX = opts.posX || 0.0;
+    this.pctX = opts.posY || 0.0;
+    this.unitsX = opts.unitsX || "in";
+    this.posY = opts.posY || 0.0;
+    this.pctY = opts.pctY || 0.0;
+    this.unitsY = opts.unitsY || "in";
+    this.rotation = opts.rotation ||0.0;
+    this.name = opts.name || this._playfield.generateCutoutName(cutoutType);
 
     window.fetch(this._vectorUri).then((svg) => {
       svg.text().then((text) => {
@@ -53,6 +43,7 @@ class CutoutModel {
         this._vectorWidth = parseFloat(vectorParent.getAttribute("width"));
         this._vectorHeight = parseFloat(vectorParent.getAttribute("height"));
         this.calculateAbsolutePosition();
+        console.log(this);
       });
     })
   }
@@ -92,14 +83,14 @@ class CutoutModel {
     }
   }
   export() {
-    return {
-      id: this.id,
-      name: this.name,
-      cutoutType: this.cutoutType,
+    var exp = {
       offsetX: this.absoluteX,
       offsetY: this.absoluteY,
       rotation: this.rotation ? [this.posX, this.posY, this.rotation] : undefined,
     }
+    var fields = ["id", "name", "cutoutType", "anchor", "referencePoint", "posX", "pctX", "unitsX", "posY", "pctY", "unitsY"]
+    fields.forEach((field) => { exp[field] = this[field] });
+    return exp;
   }
   setAnchor(anchor) {
     if (this._validateAnchorPoint(anchor)) {
@@ -107,6 +98,13 @@ class CutoutModel {
       this.calculateAbsolutePosition()
     }
     return this;
+  }
+  setId(id) {
+    if (this.id === null) {
+      this.id = id;
+    } else {
+      throw Error("Cutout '" + this.name +"' already has id " + id + ", cannot overwrite");
+    }
   }
   setName(name) {
     if (this._validateName(name)) {

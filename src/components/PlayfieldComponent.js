@@ -34,10 +34,15 @@ class PlayfieldComponent extends Component {
     this.setState({ height, width });
   }
   componentDidMount() {
-    this.updateWidth();
     window.addEventListener("resize", this.updateWidth.bind(this));
   }
+  componentDidUpdate(prevProps) {
+    if (!prevProps.playfield && this.props.playfield) {
+      this.updateWidth();
+    }
+  }
   render() {
+    if (!this.props.playfield) { return null; }
     // Calculate the playfield coordinates based on the element size and relative cursor position
     const xPct = this.props.position.x / this.props.elementDimensions.width;
     const yPct = this.props.position.y / this.props.elementDimensions.height;

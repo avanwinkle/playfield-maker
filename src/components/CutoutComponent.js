@@ -21,6 +21,8 @@ class CutoutComponent extends Component {
     });
   }
   render() {
+    if (!this.props.cutout._rawVector) { return null; }
+
     return (
       <div className="CutoutComponentContainer"
         style={{

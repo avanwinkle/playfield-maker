@@ -1,20 +1,30 @@
 class PlayfieldModel {
   constructor(opts) {
     opts = opts || {};
+    this.name = opts.name || "New Playfield";
     this.width = opts.width || 20.5;
     this.height = opts.height || 45.0;
-    this.dpi = -1;
     this.cutouts = [];
-    window.playfield = this;
+    this.dpi = -1;
+    this.idCount = 0;
   }
   addCutout(cutoutInstance) {
     if (this.cutouts.indexOf(cutoutInstance) === -1) {
+      cutoutInstance.setId(this.idCount++)
       this.cutouts.push(cutoutInstance);
     }
   }
+  addCutouts(cutoutInstances) {
+    cutoutInstances.forEach((cutout) => {
+      if (cutout.id >= this.idCount) {
+        this.idCount = cutout.id + 1;
+      }
+      this.cutouts.push(cutout);
+    });
+  }
   export() {
     return JSON.stringify({
-      name: "playfield",
+      name: this.name,
       cutouts: this.cutouts.map((cutout) => cutout.export()),
       width: this.width,
       height: this.height,
