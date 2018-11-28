@@ -18,6 +18,11 @@ class PlayfieldMakerApp extends Component {
       activeCutout: undefined,
       isSavedCutout: undefined,
     };
+
+    if (window.require) {
+      this._ipcRenderer = window.require("electron").ipcRenderer;
+      this._ipcRenderer.on("export-request", this._handleExportRequest.bind(this));
+    }
   }
   onCutoutAdd(e) {
     const cutoutType = this.refs.newCutoutType.value;
@@ -42,6 +47,11 @@ class PlayfieldMakerApp extends Component {
       this._playfield.removeCutout(cutout);
     }
     this.setState({ activeCutout: undefined, isSavedCutout: undefined });
+  }
+  _handleExportRequest(e, data) {
+    console.log("Export requested!", e);
+    console.info(data);
+    this._ipcRenderer.send("export-ready", { format: "json", data: this._playfield.export() });
   }
   render() {
     const { activeCutout } = this.state;

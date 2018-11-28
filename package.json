@@ -1,16 +1,35 @@
 {
-  "name": "playfield-maker",
-  "productName": "Playfield Maker",
-  "description": "A handy tool for designing playfields",
-  "author": {
-    "name": "Anthony van Winkle",
-    "email": "avanwinkle@users.noreply.github.com"
-  },
+  "name": "playfield_maker_gui",
   "version": "0.1.0",
-  "engines": {
-    "node": ">=6.14.1"
+  "private": true,
+  "dependencies": {
+    "@material-ui/core": "^3.6.0",
+    "react": "^16.6.0",
+    "react-cursor-position": "^3.0.3",
+    "react-dom": "^16.6.0",
+    "react-scripts": "2.1.0"
   },
+  "main": "app/electron-starter.js",
+  "scripts": {
+    "start": "nf start -p 13020",
+    "electron-dev": "ELECTRON_DEV=true ELECTRON_START_URL=http://localhost:13020 electron .",
+    "electron-wait": "node scripts/electron-wait-react",
+    "react-start": "PORT=13020 react-scripts start",
+    "react-build": "react-scripts build"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
   "devDependencies": {
-    "xmldom": "^0.1.27"
+    "electron": "^3.0.10",
+    "foreman": "^3.0.1",
+    "fs": "0.0.1-security",
+    "material-ui": "^0.20.2"
   }
 }

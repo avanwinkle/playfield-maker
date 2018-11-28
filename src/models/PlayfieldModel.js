@@ -5,11 +5,20 @@ class PlayfieldModel {
     this.height = opts.height || 45.0;
     this.dpi = -1;
     this.cutouts = [];
+    window.playfield = this;
   }
   addCutout(cutoutInstance) {
     if (this.cutouts.indexOf(cutoutInstance) === -1) {
       this.cutouts.push(cutoutInstance);
     }
+  }
+  export() {
+    return JSON.stringify({
+      name: "playfield",
+      cutouts: this.cutouts.map((cutout) => cutout.export()),
+      width: this.width,
+      height: this.height,
+    })
   }
   generateCutoutName(cutoutType) {
     var count = 1;

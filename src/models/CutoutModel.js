@@ -46,9 +46,10 @@ class CutoutModel {
         window.v = vectorParent;
         var paths = vectorParent.getElementsByTagName("path")
         for (var i=0; i<paths.length; i++) {
-          paths[i].style = "";
-          paths[i].style.fill = undefined;
-          paths[i].style.stroke = undefined;
+          var style = paths[i].getAttribute("style");
+          if (style) {
+            paths[i].setAttribute("style", style.replace(/((fill|stroke):[^;]+;?)/g,""))
+          }
         }
         this._rawVector = vectorParent;
         this._vectorWidth = parseFloat(vectorParent.getAttribute("width"));
@@ -90,6 +91,14 @@ class CutoutModel {
 
     if (this.onPositionChanged) {
       this.onPositionChanged(this.renderX, this.renderY, this.scale);
+    }
+  }
+  export() {
+    return {
+      cutoutType: this.cutoutType,
+      offsetX: this.absoluteX,
+      offsetY: this.absoluteY,
+      rotation: this.rotation ? [this.posX, this.posY, this.rotation] : undefined,
     }
   }
   setAnchor(anchor) {
