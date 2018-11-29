@@ -29,6 +29,12 @@ class CutoutEditorComponent extends Component {
   resetCutout() {
     // If this cutout is on the playfield, reset the initial values
     if (this.props.cutout.id) {
+      // We use empty strings for input binding, but reset to undefined
+      Object.keys(this.initialValues).forEach((key) => {
+        if (this.initialValues[key] === "") {
+          this.initialValues[key] = undefined;
+        }
+      });
       this.props.cutout.validateAndSave(this.initialValues);
     }
     this.props.onClose("CANCEL");

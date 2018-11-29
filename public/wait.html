@@ -4,10 +4,13 @@
     <style type="text/css">
       body {
         background-color: #ddd;
+        font-family: sans-serif;
       }
       .refresh { color: #0033FF; cursor: pointer; }
       .header { font-size: 14pt; margin: 12px 0; text-transform: uppercase;}
+      .code { font-family: monospace; font-size: 8pt; }
       #serverTarget { font-family: monospace; text-decoration: italic; }
+      #hint { font-size: 10pt; position:absolute; bottom: 12px; color: #444;}
     </style>
   </head>
   <body>
@@ -24,6 +27,16 @@
       <div>Try calling <pre>npm run react-dev</pre> to start the server, then 
         <a class="refresh" onclick="window.location.reload()">refresh this page</a>.</div>
     </div>
+    <div id="hint">
+        <div>
+          Tired of waiting for the react server while making changes to electron?
+          Try running them separately!<br/>
+        </div>
+        <div> 
+          Keep <span class="code">npm run react-dev</span> running in one console window,
+          while using <span class="code">npm run electron-dev</span> in another to (re)start electron.
+        </div>
+    </div>
     <script>
       console.log(window.location.search);
       var port = window.location.search.replace("?","");
@@ -32,7 +45,7 @@
       var attemptNum = 0;
 
       function tryConnection() {
-        if (attemptNum > 4) {
+        if (attemptNum > 10) {
           document.getElementById("serverTarget").innerHTML = target;
           document.getElementById("pending").style.visibility = "hidden";
           document.getElementById("failure").style.visibility = "visible";

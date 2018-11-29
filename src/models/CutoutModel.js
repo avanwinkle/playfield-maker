@@ -188,6 +188,7 @@ class CutoutModel {
       errs.rotation = this._validateRotation(opts.rotation);
     }
     if (Object.keys(errs).filter((key) => errs[key]).length) {
+      console.warn("Cutout validateAndSave failed with errors:", errs);
       return errs;
     }
     // Set the units first, to avoid miscalculations
