@@ -7,17 +7,20 @@
     "react": "^16.6.0",
     "react-cursor-position": "^3.0.3",
     "react-dom": "^16.6.0",
-    "react-scripts": "2.1.0"
+    "react-scripts": "2.1.0",
+    "xmldom": "^0.1.27"
   },
   "homepage": "./",
   "main": "app/electron-starter.js",
   "scripts": {
-    "start": "nf start -p 13020",
-    "electron": "electron .",
+    "dev": "nf start -p 13020",
+    "build": "npm run react-build",
+    "start": "electron .",
     "electron-dev": "ELECTRON_DEV=true ELECTRON_START_URL=http://localhost:13020 electron .",
     "electron-wait": "node scripts/electron-wait-react",
-    "react-start": "PORT=13020 react-scripts start",
-    "react-build": "react-scripts build"
+    "react-dev": "PORT=13020 react-scripts start",
+    "react-build": "react-scripts build",
+    "postinstall": "npm run build"
   },
   "eslintConfig": {
     "extends": "react-app"

@@ -51,11 +51,11 @@ class PlayfieldMakerApp extends Component {
       default:
         break;
     }
-    this.setState({ 
-      activeCutout: undefined, 
+    this.setState({
+      activeCutout: undefined,
       cutouts: this.state.playfield.cutouts,
     });
-    this._ipcRenderer.send("export", { action: "SAVE", data: this.state.playfield.export() });
+    this._savePlayfield();
   }
   _handleExportRequest(e, data) {
     this._ipcRenderer.send("export", { action: "SVG", filename: this.state.playfield.id, data: this.state.playfield.export() });
@@ -63,13 +63,18 @@ class PlayfieldMakerApp extends Component {
   _handlePreferences(e, data) {
     const playfield = new PlayfieldModel(data.playfield);
     if (data.playfield && data.playfield.cutouts) {
-      playfield.addCutouts(data.playfield.cutouts.map((cutout) => 
+      playfield.addCutouts(data.playfield.cutouts.map((cutout) =>
         this.createCutout(cutout.cutoutType, playfield, cutout) ));
     }
-    this.setState({ 
+    this.setState({
       cutouts: playfield.cutouts,
       playfield: playfield,
     });
+  }
+  _savePlayfield() {
+    if (this.state.playfield.id) {
+      this._ipcRenderer.send("export", { action: "SAVE", filename: this.state.playfield.id, data: this.state.playfield.export() });
+    }
   }
   render() {
     const { activeCutout, CutoutTypes, playfield, cutouts } = this.state;
@@ -91,15 +96,15 @@ class PlayfieldMakerApp extends Component {
           <div className="AppDrawer">
             {activeCutout && (
               <CutoutEditorComponent cutout={activeCutout}
-                isSaved={this.state.isSavedCutout}
                 onClose={this.onCutoutEditClose.bind(this)}
               />
             )}
             {!activeCutout && playfield && CutoutTypes && (
-              <PlayfieldEditorComponent 
+              <PlayfieldEditorComponent
                 playfield={playfield}
                 cutoutTypes={CutoutTypes}
                 onCutoutAdd={this.onCutoutAdd.bind(this)}
+                onSave={this._savePlayfield.bind(this)}
               />
             )}
           </div>

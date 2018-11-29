@@ -186,10 +186,10 @@ class CutoutEditorComponent extends Component {
           </div>
         </div>
         <div className="CutoutEditorRow">
-          <Button variant="contained"
+          <Button variant="contained" color="primary"
             onClick={() => this.props.onClose("SAVE") }
             disabled={this.state.hasErrors}
-          >{this.props.cutout.id ? "Save Changes" : "Add Cutout"}</Button>
+          >{this.props.cutout.id ? "Save Changes" : "Save Cutout"}</Button>
         </div>
         <div className="CutoutEditorRow">
           <Button variant="text"

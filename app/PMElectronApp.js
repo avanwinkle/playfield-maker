@@ -18,15 +18,13 @@ class PlayfieldMakerElectron {
     this.prefs = undefined;
   }
 
-  getPreferences() {
-    const prefsPath = userDir + "prefs.json";
-    // If the user data path doesn't exist, create it
-    var dirProm = new Promise((resolve, reject) => {
-      fs.stat(userDir, (err) => {
+  makeDir(path) {
+    return new Promise((resolve, reject) => {
+      fs.stat(path, (err) => {
         if (err && err.code === "ENOENT") {
-          fs.mkdir(userDir, (err) => {
-            if (err) { 
-              reject(err); 
+          fs.mkdir(path, (err) => {
+            if (err) {
+              reject(err);
             } else {
               resolve();
             }
@@ -38,56 +36,67 @@ class PlayfieldMakerElectron {
         }
       });
     });
+  }
 
-    var prefsProm = new Promise((resolve, reject) => {
-      fs.readFile(prefsPath, "utf8", (err, response) => {
-        // If no prefs file exists, create one
-        if (err) { 
-          if (err.code === "ENOENT") {
-            prefs = {};
-            fs.writeFile(prefsPath, JSON.stringify(prefs), (_err) => {
-              resolve(prefs);
-            })
-          } else {
-            reject(err); 
+  getPreferences() {
+    const prefsPath = userDir + "prefs.json";
+    const playfieldsDir = userDir + "playfields/";
+    // If the user data path doesn't exist, create it
+    return this.makeDir(userDir).then(() => {
+      return new Promise((resolve, reject) => {
+        fs.readFile(prefsPath, "utf8", (err, response) => {
+          // If no prefs file exists, create one
+          if (err) {
+            if (err.code === "ENOENT") {
+              prefs = {};
+              fs.writeFile(prefsPath, JSON.stringify(prefs), (_err) => {
+                resolve(prefs);
+              })
+            } else {
+              reject(err);
+            }
+            return;
           }
-          return;
-        }
-        var prefs = JSON.parse(response);
-        if (prefs.lastPlayfield) {
-          fs.readFile(userDir + "/playfields/" + prefs.lastPlayfield + ".json", "utf8", (err, field) => {
-            if (err) { reject(err); }
-            prefs.playfield = JSON.parse(field);
+          var prefs = JSON.parse(response);
+          if (prefs.lastPlayfield) {
+            this.makeDir(playfieldsDir).then(() => {
+              fs.readFile(playfieldsDir + prefs.lastPlayfield + ".json", "utf8", (err, field) => {
+                if (err) { reject(err); }
+                prefs.playfield = JSON.parse(field);
+                resolve(prefs);
+              });
+            });
+          } else {
             resolve(prefs);
-          });
-        } else {
-          resolve(prefs);
-        }
+          }
+        });
       });
     });
-
-    return dirProm.then(() => prefsProm);
   }
 
   receiveExport(response) {
-    let path, format;
+    let path, filename, format;
     switch (response.action) {
       case "SAVE":
-        format = "json";
-        path = userDir + "/playfields/" + this.prefs.lastPlayfield + ".json";
-        break;
       case "SAVEAS":
         format = "json";
-        path = userDir + "/playfields/" + response.filename + ".json";
+        path = userDir + "/playfields/";
+        filename = response.filename + ".json";
+        if (response.filename !== this.prefs.lastPlayfield) {
+          this.updatePrefs({ lastPlayfield: response.filename });
+        }
         break;
       case "SVG":
         format = "svg";
-        path = userDir + "/exports/" + response.filename + ".svg"; 
+        path = userDir + "/exports/";
+        filename = response.filename + ".svg";
         break;
       default:
         throw Error("Unknown export action '" + response.action + "'");
     }
-    this.exporter.exportPlayfieldJSON(path, format, response.data);
+    this.makeDir(path).then(() => {
+      this.exporter.exportPlayfieldJSON(path + filename, format, response.data);
+    })
   }
 
   sendToMainWindow(event, data) {
@@ -99,6 +108,16 @@ class PlayfieldMakerElectron {
     if (this._mainWindow && this._mainWindow.webContents) {
       this._mainWindow.webContents.toggleDevTools();
     }
+  }
+  updatePrefs(obj) {
+    Object.assign(this.prefs, obj);
+    const prefsPath = userDir + "prefs.json";
+    return new Promise((resolve, reject) => {
+      fs.writeFile(prefsPath, JSON.stringify(this.prefs), (err) => {
+        if (err) { reject(err); }
+        else { resolve(); }
+      });
+    });
   }
   _createApplication() {
     this.menu = new PMElectronMenu(this);

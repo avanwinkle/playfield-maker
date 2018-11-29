@@ -1,8 +1,8 @@
 class PlayfieldModel {
   constructor(opts) {
     opts = opts || {};
-    this.id = opts.id || "sample_playfield";
-    this.name = opts.name || "New Playfield";
+    this.id = opts.id || null;
+    this.name = opts.name || "Untitled Playfield";
     this.width = opts.width || 20.5;
     this.height = opts.height || 45.0;
     this.cutouts = [];
@@ -51,6 +51,11 @@ class PlayfieldModel {
   removeCutout(cutoutInstance) {
     if (this.cutouts.indexOf(cutoutInstance) !== -1) {
       this.cutouts.splice(this.cutouts.indexOf(cutoutInstance), 1);
+    }
+  }
+  setId(id) {
+    if (!this.id) {
+      this.id = id;
     }
   }
   setName(name) {
