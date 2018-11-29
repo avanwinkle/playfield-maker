@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const xmldom = require("xmldom");
 
-const DPI = 96;
+const DPI = 90;
 const GROUP_CUTOUTS = false;
 
 const styleSheet =

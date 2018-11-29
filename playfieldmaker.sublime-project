@@ -1,0 +1,20 @@
+{
+    "folders":
+    [
+        {
+            "path": "app",
+            "name": "app (Electron)",
+        },
+        {
+            "path": "public"
+        },
+        {
+            "path": "src",
+            "name": "src (React)",
+        }
+    ],
+    "settings":
+    {
+        "tab_size": 2
+    }
+}
