@@ -67,7 +67,7 @@ class PlayfieldExporter {
 
     return playfieldSVG;
   }
-  exportPlayfieldJSON(path, format, playfieldJSON) {
+  exportPlayfield(format, playfieldJSON) {
     let output;
     if (format === "svg") {
       const svg = this.createPlayfieldSVG(JSON.parse(playfieldJSON));
@@ -78,14 +78,7 @@ class PlayfieldExporter {
       process.stderr.write("Unknown export format '" + format +"'");
       return;
     }
-
-    fs.writeFile(path, output, (result) => {
-      if (result) {
-        process.stderr.write("Error saving file: " + result);
-      } else {
-        process.stdout.write("File export successful!\n" + playfieldJSON + "\n");
-      }
-    });
+    return output;
   }
   createLayerGroup(layerName, isInkscapeLayer) {
     var group = this._document.createElement("g");

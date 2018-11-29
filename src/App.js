@@ -57,8 +57,9 @@ class PlayfieldMakerApp extends Component {
     });
     this._savePlayfield();
   }
-  _handleExportRequest(e, data) {
-    this._ipcRenderer.send("export", { action: "SVG", filename: this.state.playfield.id, data: this.state.playfield.export() });
+  _handleExportRequest(e, opts) {
+    this._ipcRenderer.send("export",
+      Object.assign({ action: "SVG", filename: this.state.playfield.id, data: this.state.playfield.export() }, opts));
   }
   _handlePreferences(e, data) {
     const playfield = new PlayfieldModel(data.playfield);
@@ -105,6 +106,7 @@ class PlayfieldMakerApp extends Component {
                 cutoutTypes={CutoutTypes}
                 onCutoutAdd={this.onCutoutAdd.bind(this)}
                 onSave={this._savePlayfield.bind(this)}
+                onExport={this._handleExportRequest.bind(this)}
               />
             )}
           </div>

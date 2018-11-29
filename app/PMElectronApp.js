@@ -3,7 +3,7 @@ const fs = require("fs");
 const path     = require("path");
 const url      = require("url");
 
-const { app, BrowserWindow, ipcMain } = electron;
+const { app, BrowserWindow, ipcMain, dialog } = electron;
 const PMElectronMenu = require("./PMElectronMenu");
 
 const PlayfieldExporter = require("./PlayfieldExporter");
@@ -89,14 +89,39 @@ class PlayfieldMakerElectron {
       case "SVG":
         format = "svg";
         path = userDir + "/exports/";
-        filename = response.filename + ".svg";
+        if (response.noDialog) {
+          filename = response.filename + ".svg";
+        }
         break;
       default:
         throw Error("Unknown export action '" + response.action + "'");
     }
+    const output = this.exporter.exportPlayfield(format, response.data);
     this.makeDir(path).then(() => {
-      this.exporter.exportPlayfieldJSON(path + filename, format, response.data);
-    })
+      return new Promise((resolve, reject) => {
+        if (filename) {
+          resolve(path + filename);
+        } else {
+          var opts = {
+            title: "Choose SVG Destination",
+            defaultPath: path + response.filename + ".svg",
+          };
+          dialog.showSaveDialog(this._mainWindow, opts, resolve);
+        }
+      });
+    }).then((target) => {
+      return new Promise((resolve, reject) => {
+        fs.writeFile(target, output, (result) => {
+          if (result) {
+              reject(result);
+          } else {
+            resolve();
+          }
+        });
+      });
+    }).catch((err) => {
+      process.stderr.write(err);
+    });
   }
 
   sendToMainWindow(event, data) {

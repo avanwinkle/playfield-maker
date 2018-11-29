@@ -46,7 +46,7 @@ class PlayfieldMakerMenu {
         label: "Playfield",
         submenu: [
           {
-            label: "Export as SVG",
+            label: "Export SVG As...",
             click: (__e) => {
               this.electronInstance.sendToMainWindow("export-request", { format: "json" });
             }

@@ -45,47 +45,54 @@ class PlayfieldEditorComponent extends Component {
   render() {
     return (
       <form className="CutoutEditorContainer">
-        <div className="CutoutEditorRow">
-          <FormControl>
-            <TextField name="PlayfieldName" label="Playfield Name"
-              value={this.state.name}
-              onChange={this.onNameChange.bind(this)}
-              />
-          </FormControl>
-        </div>
-        <div className="CutoutEditorRow">
-          <FormControl>
-            <InputLabel shrink={true}>Add a Cutout</InputLabel>
-            <Select value={this.state.selectedCutout} onChange={this.onCutoutSelect.bind(this)}>
-              <MenuItem name="" value={-1}>--- Select a Cutout ---</MenuItem>
-              {Object.keys(this.props.cutoutTypes).map((cutoutType) => (
-                <MenuItem name="cutoutType" value={cutoutType} key={cutoutType}>
-                  {this.props.cutoutTypes[cutoutType].name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </div>
-        <div className="CutoutEditorRow">
-          <Button variant="contained" color="primary"
-            disabled={this.state.selectedCutout===-1}
-            onClick={this.onCutoutAdd.bind(this)}
-          >Add Cutout</Button>
-        </div>
-        {!this.state.playfieldId && (
+        <div className="CutoutEditorMain">
           <div className="CutoutEditorRow">
             <FormControl>
-              <TextField name="PlayfieldName" label="File Name"
-                value={this.state.filename}
-                onChange={this.onFileChange.bind(this)}
+              <TextField name="PlayfieldName" label="Playfield Name"
+                value={this.state.name}
+                onChange={this.onNameChange.bind(this)}
                 />
             </FormControl>
-            <Button variant="text" color="secondary"
-              disabled={!this.state.filename}
-              onClick={this.onSavePlayfield.bind(this)}
-            >Save Playfield</Button>
           </div>
-        )}
+          <div className="CutoutEditorRow">
+            <FormControl>
+              <InputLabel shrink={true}>Add a Cutout</InputLabel>
+              <Select value={this.state.selectedCutout} onChange={this.onCutoutSelect.bind(this)}>
+                <MenuItem name="" value={-1}>--- Select a Cutout ---</MenuItem>
+                {Object.keys(this.props.cutoutTypes).map((cutoutType) => (
+                  <MenuItem name="cutoutType" value={cutoutType} key={cutoutType}>
+                    {this.props.cutoutTypes[cutoutType].name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+          <div className="CutoutEditorRow">
+            <Button variant="contained" color="primary"
+              disabled={this.state.selectedCutout===-1}
+              onClick={this.onCutoutAdd.bind(this)}
+            >Add Cutout</Button>
+          </div>
+          {!this.state.playfieldId && (
+            <div className="CutoutEditorRow">
+              <FormControl>
+                <TextField name="PlayfieldName" label="File Name"
+                  value={this.state.filename}
+                  onChange={this.onFileChange.bind(this)}
+                  />
+              </FormControl>
+              <Button variant="text" color="secondary"
+                disabled={!this.state.filename}
+                onClick={this.onSavePlayfield.bind(this)}
+              >Save Playfield</Button>
+            </div>
+          )}
+        </div>
+        <div className="CutoutEditorBottom">
+          <Button variant="text" color="primary"
+            onClick={(e) => { this.props.onExport(e, { noDialog: true }); }}
+          >Quick-Export SVG</Button>
+        </div>
       </form>
     );
   }

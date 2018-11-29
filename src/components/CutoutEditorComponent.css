@@ -4,6 +4,17 @@
   padding: 24px 12px;
 }
 
+.CutoutEditorMain {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 100%;
+}
+
+.CutoutEditorBottom {
+  flex: 0 1 auto;
+  margin-bottom: -12px;
+}
+
 .CutoutEditorRow {
   display: flex;
   flex-direction: row;
