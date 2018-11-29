@@ -12,16 +12,19 @@ class AnchorSelectorComponent extends Component {
         <Radio value="6"
           checked={this.props.anchor === 6}
           onChange={this.props.onChange}
+          color="primary"
           classes={{ root: 'AnchorRadioButton' }}
         />
         <Radio value="7"
           checked={this.props.anchor === 7}
           onChange={this.props.onChange}
+          color="primary"
           classes={{ root: 'AnchorRadioButton' }}
         />
         <Radio value="8"
           checked={this.props.anchor === 8}
           onChange={this.props.onChange}
+          color="primary"
           classes={{ root: 'AnchorRadioButton' }}
         />
       </div>
@@ -29,16 +32,19 @@ class AnchorSelectorComponent extends Component {
         <Radio value="3"
           checked={this.props.anchor === 3}
           onChange={this.props.onChange}
+          color="primary"
           classes={{ root: 'AnchorRadioButton' }}
         />
         <Radio value="4"
           checked={this.props.anchor === 4}
           onChange={this.props.onChange}
+          color="primary"
           classes={{ root: 'AnchorRadioButton' }}
         />
         <Radio value="5"
           checked={this.props.anchor === 5}
           onChange={this.props.onChange}
+          color="primary"
           classes={{ root: 'AnchorRadioButton' }}
         />
       </div>
@@ -46,16 +52,19 @@ class AnchorSelectorComponent extends Component {
         <Radio value="0"
           checked={this.props.anchor === 0}
           onChange={this.props.onChange}
+          color="primary"
           classes={{ root: 'AnchorRadioButton' }}
         />
         <Radio value="1"
           checked={this.props.anchor === 1}
           onChange={this.props.onChange}
+          color="primary"
           classes={{ root: 'AnchorRadioButton' }}
         />
         <Radio value="2"
           checked={this.props.anchor === 2}
           onChange={this.props.onChange}
+          color="primary"
           classes={{ root: 'AnchorRadioButton' }}
         />
       </div>

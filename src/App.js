@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import ReactCursorPosition from 'react-cursor-position';
 import PlayfieldComponent from './components/PlayfieldComponent';
 import CutoutEditorComponent from './components/CutoutEditorComponent';
+import PlayfieldEditorComponent from './components/PlayfieldEditorComponent';
 import CutoutModel from './models/CutoutModel';
 import PlayfieldModel from './models/PlayfieldModel';
 
@@ -31,40 +32,33 @@ class PlayfieldMakerApp extends Component {
   createCutout(cutoutType, playfield, opts) {
     return new CutoutModel(cutoutType, this.state.CutoutTypes[cutoutType], playfield, opts);
   }
-  onCutoutAdd(e) {
-    const cutoutType = this.refs.newCutoutType.value;
+  onCutoutAdd(cutoutType) {
     const cutout = this.createCutout(cutoutType, this.state.playfield);
-    this.setState({
-      activeCutout: cutout,
-      isSavedCutout: false,
-    })
+    this.onCutoutEdit(cutout);
   }
   onCutoutEdit(cutout) {
-    this.setState({
-      activeCutout: cutout,
-      isSavedCutout: true,
-    });
+    this.setState({ activeCutout: cutout });
   }
-  onCutoutSave() {
-    this.state.playfield.addCutout(this.state.activeCutout);
-    this.setState({ 
-      activeCutout: undefined, 
-      isSavedCutout: undefined,
-      cutouts: this.state.playfield.cutouts,
-    });
-  }
-  onCutoutCancel(cutout) {
-    if (this._isSavedCutout === false) {
-      this.state.playfield.removeCutout(cutout);
+  onCutoutEditClose(action) {
+    switch(action) {
+      case "SAVE":
+        this.state.playfield.addCutout(this.state.activeCutout);
+        break;
+      case "DELETE":
+        this.state.playfield.removeCutout(this.state.activeCutout);
+        break;
+      case "CANCEL":
+      default:
+        break;
     }
     this.setState({ 
       activeCutout: undefined, 
-      isSavedCutout: undefined,
       cutouts: this.state.playfield.cutouts,
     });
+    this._ipcRenderer.send("export", { action: "SAVE", data: this.state.playfield.export() });
   }
   _handleExportRequest(e, data) {
-    this._ipcRenderer.send("export-ready", { format: "json", data: this.state.playfield.export() });
+    this._ipcRenderer.send("export", { action: "SVG", filename: this.state.playfield.id, data: this.state.playfield.export() });
   }
   _handlePreferences(e, data) {
     const playfield = new PlayfieldModel(data.playfield);
@@ -98,19 +92,15 @@ class PlayfieldMakerApp extends Component {
             {activeCutout && (
               <CutoutEditorComponent cutout={activeCutout}
                 isSaved={this.state.isSavedCutout}
-                onComplete={this.onCutoutSave.bind(this)}
-                onCancel={this.onCutoutCancel.bind(this)}
+                onClose={this.onCutoutEditClose.bind(this)}
               />
             )}
-            {!activeCutout && CutoutTypes && (
-              <form className="NewCutoutContainer">
-                <select ref="newCutoutType">
-                  {Object.keys(CutoutTypes).map((cutoutType) => (
-                    <option name="cutoutType" value={cutoutType} key={cutoutType}>{CutoutTypes[cutoutType].name}</option>
-                  ))}
-                </select>
-                <input type="button" value="Add Cutout" onClick={this.onCutoutAdd.bind(this)}/>
-              </form>
+            {!activeCutout && playfield && CutoutTypes && (
+              <PlayfieldEditorComponent 
+                playfield={playfield}
+                cutoutTypes={CutoutTypes}
+                onCutoutAdd={this.onCutoutAdd.bind(this)}
+              />
             )}
           </div>
           <div className="AppFooter">

@@ -12,27 +12,36 @@ import './CutoutEditorComponent.css';
 class CutoutEditorComponent extends Component {
   constructor(props) {
     super(props);
-    this.setInitialValues(props.cutout, props.isSaved);
+    this.setInitialValues(props.cutout);
     this.state = Object.assign({ errors: {}, hasErrors: false }, this.initialValues);
   }
   componentDidUpdate(prevProps) {
-    if (prevProps.cutout.name !== this.props.cutout.name) {
-      this.setInitialValues(this.props.cutout, this.props.isSaved);
+    if (prevProps.cutout.id !== this.props.cutout.id) {
+      this.setInitialValues(this.props.cutout);
+    }
+  }
+  deleteCutout() {
+    var result = window.confirm("Delete this cutout from the playfield?");
+    if (result) {
+      this.props.onClose("DELETE");
     }
   }
   resetCutout() {
-    this.props.cutout.validateAndSave(this.initialValues);
-    this.props.onComplete();
+    // If this cutout is on the playfield, reset the initial values
+    if (this.props.cutout.id) {
+      this.props.cutout.validateAndSave(this.initialValues);
+    }
+    this.props.onClose("CANCEL");
   }
-  setInitialValues(cutout, isSaved) {
+  setInitialValues(cutout) {
     this.initialValues = {
-      anchor: cutout.anchor,
+      originPoint: cutout.originPoint,
       name: cutout.name,
-      posX: isSaved ? cutout.posX : undefined,
-      pctX: isSaved ? cutout.pctX : undefined,
-      posY: isSaved ? cutout.posY : undefined,
-      pctY: isSaved ? cutout.pctY : undefined,
-      referencePoint: cutout.referencePoint,
+      posX: cutout.posX || "",
+      pctX: cutout.pctX || "",
+      posY: cutout.posY || "",
+      pctY: cutout.pctY || "",
+      anchorPoint: cutout.anchorPoint,
       unitsX: cutout.unitsX,
       unitsY: cutout.unitsY,
     }
@@ -44,22 +53,44 @@ class CutoutEditorComponent extends Component {
     var posKey = scale + axis;
     var altKey = (scale === "pct" ? "pos" : "pct" ) + axis;
     var unitsKey = "units" + axis;
+    var errs;
     // Set the text input value regardless of validation
-    this.setState({ [posKey]: value });
+    this.setState({ [posKey]: value, [unitsKey]: scale });
     var parsedValue = parseInt(value * 1000) / 1000;
-    if (!isNaN(parsedValue) && !this.props.cutout.validateAndSave({ [posKey]: parsedValue})) {
-      this.setValue(unitsKey, scale);
+    if (isNaN(parsedValue)) {
+      if (value !== "-") {
+        errs = this.state.errors;
+        errs[posKey] = "Invalid value";
+      }
+    } else {
+      var err = this.props.cutout.validateAndSave({ [posKey]: parsedValue, [unitsKey]: scale});
+      if (err) {
+        errs = this.state.errors;
+        errs[posKey] = err;
+      }
+    }
+    if (errs) {
+      this.setState({ errors: errs, hasErrors: true });
+      console.warn(errs);
+    } else {
       this.setState({ [altKey]: this.props.cutout[altKey] });
     }
   }
   setValue(key, val) {
-    this.setState({ [key]: val });
-    var result = this.props.cutout.validateAndSave({ [key]: val});
-    if (result) {
-      this.setState({ errors: result, hasErrors: true });
-    } else {
-      this.setState({ [key]: this.props.cutout[key], errors: {}, hasErrors: false });
-    }
+    var p = new Promise((resolve, reject) => {
+      this.setState({ [key]: val }, () => {
+        var result = this.props.cutout.validateAndSave({ [key]: val});
+        if (result) {
+          this.setState({ errors: result, hasErrors: true });
+          reject(result);
+        } else {
+          this.setState({ [key]: this.props.cutout[key], errors: {}, hasErrors: false }, () => {
+            resolve();
+          });
+        }
+      });
+    });
+    return p;
   }
   toggleUnits(axis) {
     if (axis === "x") {
@@ -91,10 +122,10 @@ class CutoutEditorComponent extends Component {
           <div className="TextFieldPos">
             <FormControl>
               <TextField name="this.stateX" label="X Position"
-                value={this.state.posX}
+                value={this.state.posX || ""}
                 error={!!this.state.errors.posX}
                 InputLabelProps={{ shrink: true }}
-                placeholder="0"
+                placeholder="0.0"
                 InputProps={{ endAdornment: <InputAdornment position="end">inches</InputAdornment> }}
                 onChange={(e) => { this.setPosition("X", "pos", e.target.value)}} />
                 <FormHelperText error>{this.state.errors.posX}</FormHelperText>
@@ -103,7 +134,7 @@ class CutoutEditorComponent extends Component {
           <div className="TextFieldPos">
             <FormControl>
               <TextField name="this.stateX" label="X Percentage"
-                value={this.state.pctX}
+                value={this.state.pctX || ""}
                 error={this.state.errors && this.state.errors.pctX}
                 InputLabelProps={{ shrink: true }}
                 placeholder="0"
@@ -114,9 +145,9 @@ class CutoutEditorComponent extends Component {
           </div>
           <div>
             <FormControl>
-              <InputLabel shrink={true}>Anchor</InputLabel>
-              <AnchorSelector anchor={this.state.anchor} onChange={(e) => this.setValue("anchor", parseInt(e.target.value)) } />
-              <FormHelperText error>{this.state.errors.anchor}</FormHelperText>
+              <InputLabel shrink={true}>Origin</InputLabel>
+              <AnchorSelector anchor={this.state.originPoint} onChange={(e) => this.setValue("originPoint", parseInt(e.target.value)) } />
+              <FormHelperText error>{this.state.errors.originPoint}</FormHelperText>
             </FormControl>
           </div>
         </div>
@@ -124,44 +155,53 @@ class CutoutEditorComponent extends Component {
           <div className="TextFieldPos">
             <FormControl>
               <TextField name="this.stateY" label="Y Position"
-                value={this.state.posY}
+                value={this.state.posY || ""}
                 error={this.state.errors && this.state.errors.posY}
                 InputLabelProps={{ shrink: true }}
-                placeholder="0"
+                placeholder="0.0"
                 InputProps={{ endAdornment: <InputAdornment position="end">inches</InputAdornment> }}
                 onChange={(e) => { this.setPosition("Y", "pos", e.target.value); }} />
-              <FormHelperText error>{this.state.errors.posX}</FormHelperText>
+              <FormHelperText error>{this.state.errors.posY}</FormHelperText>
             </FormControl>
           </div>
           <div className="TextFieldPos">
             <FormControl>
               <TextField name="this.stateY" label="Y Percentage"
-                value={this.state.pctY}
+                value={this.state.pctY || ""}
                 error={this.state.errors && this.state.errors.pctY}
                 InputLabelProps={{ shrink: true }}
                 placeholder="0"
                 InputProps={{ endAdornment: <InputAdornment position="end">%</InputAdornment> }}
                 onChange={(e) => { this.setPosition("Y", "pct", e.target.value); }} />
-              <FormHelperText error>{this.state.errors.posX}</FormHelperText>
+              <FormHelperText error>{this.state.errors.pctY}</FormHelperText>
             </FormControl>
           </div>
           <div>
             <FormControl>
-              <InputLabel shrink={true}>Reference Point</InputLabel>
-              <AnchorSelector anchor={this.state.referencePoint}
-                onChange={(e) => this.setValue("referencePoint", parseInt(e.target.value)) } />
-              <FormHelperText error>{this.state.errors.referencePoint}</FormHelperText>
+              <InputLabel shrink={true}>Anchor</InputLabel>
+              <AnchorSelector anchor={this.state.anchorPoint}
+                onChange={(e) => this.setValue("anchorPoint", parseInt(e.target.value)) } />
+              <FormHelperText error>{this.state.errors.anchorPoint}</FormHelperText>
             </FormControl>
           </div>
         </div>
         <div className="CutoutEditorRow">
-          <Button variant="text"
-            onClick={() => this.resetCutout() }
-          >Cancel</Button>
           <Button variant="contained"
-            onClick={() => this.props.onComplete() }
+            onClick={() => this.props.onClose("SAVE") }
             disabled={this.state.hasErrors}
-          >Save Cutout</Button>
+          >{this.props.cutout.id ? "Save Changes" : "Add Cutout"}</Button>
+        </div>
+        <div className="CutoutEditorRow">
+          <Button variant="text"
+            onClick={this.resetCutout.bind(this)}
+          >Cancel</Button>
+          <div className="RowSpacer" />
+          {this.props.cutout.id && (
+            <Button variant="text"
+              color="secondary"
+              onClick={this.deleteCutout.bind(this)}
+            >Delete Cutout</Button>
+          )}
         </div>
       </div>
     )

@@ -8,16 +8,38 @@ const PMElectronMenu = require("./PMElectronMenu");
 
 const PlayfieldExporter = require("./PlayfieldExporter");
 
+const userDir = __dirname + "/../user_data/";
+
 class PlayfieldMakerElectron {
   constructor() {
     this.app = app;
     this.app.on("ready", this._createApplication.bind(this));
     this.exporter = new PlayfieldExporter();
+    this.prefs = undefined;
   }
 
   getPreferences() {
-    const prefsPath = __dirname + "/../user_data/prefs.json";
-    var p = new Promise((resolve, reject) => {
+    const prefsPath = userDir + "prefs.json";
+    // If the user data path doesn't exist, create it
+    var dirProm = new Promise((resolve, reject) => {
+      fs.stat(userDir, (err) => {
+        if (err && err.code === "ENOENT") {
+          fs.mkdir(userDir, (err) => {
+            if (err) { 
+              reject(err); 
+            } else {
+              resolve();
+            }
+          });
+        } else if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    var prefsProm = new Promise((resolve, reject) => {
       fs.readFile(prefsPath, "utf8", (err, response) => {
         // If no prefs file exists, create one
         if (err) { 
@@ -33,7 +55,7 @@ class PlayfieldMakerElectron {
         }
         var prefs = JSON.parse(response);
         if (prefs.lastPlayfield) {
-          fs.readFile(__dirname + "/../user_data/playfields/" + prefs.lastPlayfield + ".json", "utf8", (err, field) => {
+          fs.readFile(userDir + "/playfields/" + prefs.lastPlayfield + ".json", "utf8", (err, field) => {
             if (err) { reject(err); }
             prefs.playfield = JSON.parse(field);
             resolve(prefs);
@@ -43,11 +65,29 @@ class PlayfieldMakerElectron {
         }
       });
     });
-    return p;
+
+    return dirProm.then(() => prefsProm);
   }
 
-  receiveExport(__evt, data) {
-    this.exporter.exportPlayfieldJSONToFile(data.data);
+  receiveExport(response) {
+    let path, format;
+    switch (response.action) {
+      case "SAVE":
+        format = "json";
+        path = userDir + "/playfields/" + this.prefs.lastPlayfield + ".json";
+        break;
+      case "SAVEAS":
+        format = "json";
+        path = userDir + "/playfields/" + response.filename + ".json";
+        break;
+      case "SVG":
+        format = "svg";
+        path = userDir + "/exports/" + response.filename + ".svg"; 
+        break;
+      default:
+        throw Error("Unknown export action '" + response.action + "'");
+    }
+    this.exporter.exportPlayfieldJSON(path, format, response.data);
   }
 
   sendToMainWindow(event, data) {
@@ -62,7 +102,7 @@ class PlayfieldMakerElectron {
   }
   _createApplication() {
     this.menu = new PMElectronMenu(this);
-    ipcMain.on("export-ready", this.receiveExport.bind(this));
+    ipcMain.on("export", (_e, response) => { this.receiveExport(response); });
     ipcMain.on("get-preferences", this.getPreferences.bind(this));
     ipcMain.on("window-ready", this._onWindowReady.bind(this));
 
@@ -82,6 +122,7 @@ class PlayfieldMakerElectron {
   }
   _onWindowReady() {
     this.getPreferences().then((prefs) => {
+      this.prefs = prefs;
       this.sendToMainWindow("preferences", prefs);
     }).catch((reason) => {
       process.stderr.write("Unable to retrieve preferences");

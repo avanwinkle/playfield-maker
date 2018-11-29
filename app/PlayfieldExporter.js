@@ -48,10 +48,19 @@ class PlayfieldExporter {
     });
     return playfieldSVG;  
   }
-  exportPlayfieldJSONToFile(playfieldJSON) {
-    const svg = this.createPlayfieldSVG(JSON.parse(playfieldJSON));
-    const output = this._XMLSerializer.serializeToString(svg);
-    fs.writeFile(__dirname + "/../user_data/exports/playfield_export.svg", output, (result) => {
+  exportPlayfieldJSON(path, format, playfieldJSON) {
+    let output;
+    if (format === "svg") {
+      const svg = this.createPlayfieldSVG(JSON.parse(playfieldJSON));
+      output = this._XMLSerializer.serializeToString(svg);
+    } else if (format === "json") {
+      output = JSON.stringify(JSON.parse(playfieldJSON), null, 2);
+    } else {
+      process.stderr.write("Unknown export format '" + format +"'");
+      return;
+    }
+
+    fs.writeFile(path, output, (result) => {
       if (result) {
         process.stderr.write("Error saving file: " + result);
       } else {

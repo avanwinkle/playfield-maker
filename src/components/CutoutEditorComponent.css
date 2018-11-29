@@ -14,3 +14,7 @@
   margin-right: 16px;
   max-width: 100px;
 }
+
+.RowSpacer {
+  flex: 1 0 auto;
+}
