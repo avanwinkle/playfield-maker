@@ -16,8 +16,7 @@
     "dev": "nf start -p 13020",
     "build": "npm run react-build",
     "start": "electron .",
-    "electron-dev": "ELECTRON_DEV=true ELECTRON_START_URL=http://localhost:13020 electron .",
-    "electron-wait": "node scripts/electron-wait-react",
+    "electron-dev": "ELECTRON_DEV=true ELECTRON_START_URL=../public/wait.html?13020 electron .",
     "react-dev": "PORT=13020 react-scripts start",
     "react-build": "react-scripts build",
     "postinstall": "npm run build"

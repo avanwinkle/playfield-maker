@@ -41,6 +41,7 @@ class PlayfieldMakerElectron {
   getPreferences() {
     const prefsPath = userDir + "prefs.json";
     const playfieldsDir = userDir + "playfields/";
+    let prefs;
     // If the user data path doesn't exist, create it
     return this.makeDir(userDir).then(() => {
       return new Promise((resolve, reject) => {
@@ -57,7 +58,7 @@ class PlayfieldMakerElectron {
             }
             return;
           }
-          var prefs = JSON.parse(response);
+          prefs = JSON.parse(response);
           if (prefs.lastPlayfield) {
             this.makeDir(playfieldsDir).then(() => {
               fs.readFile(playfieldsDir + prefs.lastPlayfield + ".json", "utf8", (err, field) => {
@@ -157,10 +158,13 @@ class PlayfieldMakerElectron {
       title:  "Playfield Maker",
     });
 
-    const startUrl = process.env.ELECTRON_START_URL || url.format({
-      pathname: path.join(__dirname, "/../build/index.html"),
-      protocol: "file:",
+    const argUrl = (process.env.ELECTRON_START_URL || "/../build/index.html").split("?");
+    const isLocalFile = argUrl[0].indexOf("http" !== 0);
+    const startUrl = url.format({
+      pathname: isLocalFile ? path.join(__dirname, argUrl[0]) : argUrl[0],
+      protocol: isLocalFile ? "file:" : "http:",
       slashes: true,
+      search: argUrl[1],
     });
     this._mainWindow.loadURL(startUrl);
   }

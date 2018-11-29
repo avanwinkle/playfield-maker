@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style type="text/css">
+      body {
+        background-color: #ddd;
+      }
+      .refresh { color: #0033FF; cursor: pointer; }
+      .header { font-size: 14pt; margin: 12px 0; text-transform: uppercase;}
+      #serverTarget { font-family: monospace; text-decoration: italic; }
+    </style>
+  </head>
+  <body>
+    <div class="header">Starting developer mode</div>
+    <div id="pending" style="visibility: visible;">
+      <i>Looking for React server on port <span id="portNum"></span><span id="attemptNum"></span></i>
+    </div>
+    <div id="failure" style="visibility: hidden;">
+      <div><b>Failed to connect after 10 seconds.</b><br/><br/></div>
+      <div>Could not find a host at <span id="serverTarget"></span>.<br/>
+        Perhaps the react server is not running?
+      </div>
+      <br/><br/>
+      <div>Try calling <pre>npm run react-dev</pre> to start the server, then 
+        <a class="refresh" onclick="window.location.reload()">refresh this page</a>.</div>
+    </div>
+    <script>
+      console.log(window.location.search);
+      var port = window.location.search.replace("?","");
+      document.getElementById("portNum").innerHTML = port;
+      var target = 'http://localhost:' + port;
+      var attemptNum = 0;
+
+      function tryConnection() {
+        if (attemptNum > 4) {
+          document.getElementById("serverTarget").innerHTML = target;
+          document.getElementById("pending").style.visibility = "hidden";
+          document.getElementById("failure").style.visibility = "visible";
+          return;
+        }
+        document.getElementById("attemptNum").innerHTML = new Array(attemptNum++).join(".");
+        fetch(target).then(function (response) {
+          console.log("RESPONSE!", response);
+          window.location = target;
+        }).catch(function (err) {
+          console.warn("error...", err);
+          setTimeout(tryConnection, 1000)
+        });
+      }
+      tryConnection();
+    </script>
+  </body>
+</html>
