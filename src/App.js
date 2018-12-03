@@ -10,6 +10,7 @@ import './App.css';
 
 class PlayfieldMakerApp extends Component {
   constructor(props) {
+    console.log("BUILDING APP", props);
     super(props);
     this.state = {
       activeCutout: undefined,
@@ -62,11 +63,13 @@ class PlayfieldMakerApp extends Component {
       Object.assign({ action: "SVG", filename: this.state.playfield.id, data: this.state.playfield.export() }, opts));
   }
   _handlePreferences(e, data) {
+    console.log("got prefs:", data);
     const playfield = new PlayfieldModel(data.playfield);
     if (data.playfield && data.playfield.cutouts) {
       playfield.addCutouts(data.playfield.cutouts.map((cutout) =>
         this.createCutout(cutout.cutoutType, playfield, cutout) ));
     }
+    console.log("setting playfield:", playfield);
     this.setState({
       cutouts: playfield.cutouts,
       playfield: playfield,

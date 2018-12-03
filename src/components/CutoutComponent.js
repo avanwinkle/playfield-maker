@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './CutoutComponent.css';
 
+
 class CutoutComponent extends Component {
   constructor(props) {
     super(props);
@@ -33,7 +34,7 @@ class CutoutComponent extends Component {
           transformOrigin: "left top",
         }}>
         <div className="CutoutVector"
-          dangerouslySetInnerHTML={{ __html: this.props.cutout._rawVector.outerHTML }}
+          dangerouslySetInnerHTML={{ __html: this.props.cutout._makerSvg }}
         />
       </div>
     );

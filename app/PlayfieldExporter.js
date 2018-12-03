@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const xmldom = require("xmldom");
+const makerjs = require("makerjs");
 
 const DPI = 90;
 const GROUP_CUTOUTS = false;
@@ -22,9 +23,8 @@ class PlayfieldExporter {
     this._document = undefined;
     this._inkscape = true;
 
-    fs.readFile(__dirname + "/../public/data/CutoutTypes.json", "utf8", (_err, data) => {
-      this._CutoutTypes = JSON.parse(data);
-    });
+    var data = fs.readFileSync(__dirname + "/../public/data/CutoutTypes.json", "utf8");
+    this._CutoutTypes = JSON.parse(data);
   }
   createPlayfieldSVG(playfield) {
     this._document = this._DOMImplementation.createDocument(null, "xml");
@@ -90,6 +90,86 @@ class PlayfieldExporter {
     }
     return group;
   }
+  convertSVGToModel(cutoutType) {
+    const cutoutSource = this._CutoutTypes[cutoutType]
+    let cutoutModel = { models: {} };
+
+    const result = fs.readFileSync(__dirname + "/../public/cutouts/" + cutoutSource.vector, "utf8");
+    const rawDom = this._DOMParser.parseFromString(result, "text/xml");
+    let svg;
+    for (var i=0; i<rawDom.childNodes.length; i++) {
+      if (rawDom.childNodes[i].tagName === "svg") {
+        svg = rawDom.childNodes[i];
+      }
+    }
+
+    var groups = svg.getElementsByTagName("g");
+    for (var i=groups.length-1; i>=0; i--) {
+      let transX = 0;
+      let transY = 0;
+      let g = groups[i];
+      // Remove the inkscape-specific tags and add common ones
+      let layer = g.getAttribute("inkscape:label") || "UNKNOWN_LAYER";
+      // Get any group-wide transformation values
+      var transf = g.getAttribute("transform");
+      if (transf) {
+        const transfReg = /translate\(([0-9.,-]+)\);?/;
+        var match = transf.match(transfReg)
+        if (match && match.length > 0) {
+          var t = match[1].split(",");
+          transX = parseFloat(t[0]);
+          transY = parseFloat(t[1]);
+        }
+        if (transf.replace(transfReg, "") === "") {
+          g.removeAttribute("transform");
+        } else {
+          g.setAttribute("transform", transf.replace(transfReg, ""));
+        }
+      }
+
+      cutoutModel.models[layer] = { 
+        models: {},
+        // origin: [transX, transY],
+      }
+
+      // Traverse the paths to strip styles and map transformations
+      var paths = g.getElementsByTagName("path");
+      for (var j=0; j<paths.length; j++) {
+        var path = paths[j];
+        // Remove explicit path styles
+        path.setAttribute("style", path.getAttribute("style").replace(/((fill|stroke):[^;]+;?)/g,""))
+
+        var d = path.getAttribute("d");
+        if (d && (transX || transY)) {
+          const pathReg = /^m ([0-9.,-]+) /;
+          var match = d.match(pathReg);
+          if (match && match.length > 0) {
+            var m = match[1].split(",");
+            var mX = parseFloat(m[0]);
+            var mY = parseFloat(m[1]);
+            var nX = mX + transX;
+            var nY = mY + transY;
+            var nD = "M " + nX + "," + nY + " ";
+            var newPath = d.replace(pathReg, nD);
+            path.setAttribute("d", newPath);
+            var pathData = makerjs.importer.fromSVGPathData(newPath);
+            if (!pathData || Object.keys(pathData).length==0) {
+              console.log("Unable to fetch pathData from path " + newPath);
+              const lineReg = /^M [0-9.,-]+ ([0-9.,-]+)$/
+              var lmatch = newPath.match(lineReg);
+              if (lmatch && match.length > 0) {
+                newPath = newPath.replace(lmatch[1], " L " + lmatch[1]);
+                console.log(newPath);
+                pathData = makerjs.importer.fromSVGPathData(newPath);
+              }
+            }
+            cutoutModel.models[layer].models["path_" + j] = pathData;
+          }
+        }
+      }
+    }
+    return cutoutModel;
+  }
   parseCutoutSVG(cutout) {
     const cutoutSource = this._CutoutTypes[cutout.cutoutType]
     const offsetX = cutout.offsetX * cutoutSource.dpi;
@@ -141,7 +221,7 @@ class PlayfieldExporter {
         if (transf.replace(transfReg, "") === "") {
           g.removeAttribute("transform");
         } else {
-          g.setAttribute("transform", );
+          g.setAttribute("transform", transf.replace(transfReg, ""));
         }
       }
 

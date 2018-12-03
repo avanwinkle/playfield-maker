@@ -1,3 +1,5 @@
+const makerjs = require("makerjs");
+
 class CutoutModel {
   constructor(cutoutType, cutoutSchema, playfield, opts) {
     opts = opts || {};
@@ -9,6 +11,7 @@ class CutoutModel {
     }
 
     this._vectorUri = "cutouts/" + cutoutSchema.vector;
+    this._makerUri = "makers/" + cutoutType + ".json";
     this._dpi = cutoutSchema.dpi;
 
     this._playfield = playfield;
@@ -28,15 +31,17 @@ class CutoutModel {
     this.name = opts.name || this._playfield.generateCutoutName(cutoutType);
 
     window.fetch(this._vectorUri).then((svg) => {
+      console.log("SVG:", svg);
       svg.text().then((text) => {
         var parser = new DOMParser();
         var vectorParent = parser.parseFromString(text, "text/xml").getElementsByTagName("svg")[0];
         window.v = vectorParent;
         var paths = vectorParent.getElementsByTagName("path")
         for (var i=0; i<paths.length; i++) {
-          var style = paths[i].getAttribute("style");
+          const path = paths[i];
+          var style = path.getAttribute("style");
           if (style) {
-            paths[i].setAttribute("style", style.replace(/((fill|stroke):[^;]+;?)/g,""))
+            path.setAttribute("style", style.replace(/((fill|stroke):[^;]+;?)/g,""))
           }
         }
         this._rawVector = vectorParent;
@@ -44,7 +49,18 @@ class CutoutModel {
         this._vectorHeight = parseFloat(vectorParent.getAttribute("height"));
         this.calculateAbsolutePosition();
       });
-    })
+    });
+
+    window.fetch(this._makerUri).then((maker) => maker.text() ).then((makerJson) => {
+      try {
+        var makerObj = JSON.parse(makerJson);
+        console.log("MAKER", makerObj);
+        this._makerSvg = makerjs.exporter.toSVG(makerObj);
+      }
+      catch {
+        console.warn("Invalid json in makerObj for cutout type '" + cutoutType + "'");
+      }
+    });
   }
   calculateAbsolutePosition() {
     if (!this._playfield) { return; }
